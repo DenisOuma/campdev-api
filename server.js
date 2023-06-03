@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colors = require("colors");
-
+const errorHandler = require("./middleware/error");
 const connectDB = require("./config/db");
 // Rote files
 
@@ -15,15 +15,19 @@ const bootcamps = require("./routes/bootcamps");
 
 const app = express();
 
+// Body parser after model
+app.use(express.json());
+
 // Dev logging middleware
 if (process.env.NODE_ENV === "development") {
 	app.use(morgan("dev"));
 }
-// Body parser after model
-app.use(express.json());
 
 // Moute routers
 app.use("/api/v1/bootcamps", bootcamps);
+
+// Error handler middleware
+app.use(errorHandler);
 
 // set Port application
 const PORT = process.env.PORT || 5001;

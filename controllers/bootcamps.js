@@ -1,4 +1,4 @@
-const { json } = require("express");
+const ErrorResponse = require("../utils/errorResponse");
 const Bootcamp = require("../models/Bootcamp");
 // @desc    Get all bootcamps
 // @route   GET /api/v1/bootcamps
@@ -9,12 +9,11 @@ exports.getBootCamps = async (req, res, next) => {
 
 		res.status(200).json({
 			success: true,
+			count: bootCamps.length,
 			data: bootCamps,
 		});
 	} catch (error) {
-		res.status(400).json({
-			success: false,
-		});
+		next(error);
 	}
 };
 
@@ -26,18 +25,16 @@ exports.getBootCamp = async (req, res, next) => {
 		const bootCamp = await Bootcamp.findById(req.params.id);
 
 		if (!bootCamp) {
-			return res.status(400).json({
-				success: false,
-			});
+			return next(
+				new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+			);
 		}
 		res.status(200).json({
 			success: true,
 			data: bootCamp,
 		});
 	} catch (error) {
-		res.status(400).json({
-			success: false,
-		});
+		next(error);
 	}
 };
 
@@ -53,26 +50,50 @@ exports.createBootCamp = async (req, res, next) => {
 			data: bootCamp,
 		});
 	} catch (error) {
-		res.status(400).json({
-			success: false,
-		});
+		next(error);
 	}
 };
 
 // @desc    Update bootcamps
 // @route   Put /api/v1/bootcamps/:id
 // @Access  Private
-exports.updateBootCamp = (req, res, next) => {
-	res
-		.status(200)
-		.json({ success: "true", msg: `Update BootCamp ${req.params.id}` });
+exports.updateBootCamp = async (req, res, next) => {
+	try {
+		const bootCamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+			runValidators: true,
+		});
+		if (!bootCamp) {
+			return next(
+				new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+			);
+		}
+		res.status(200).json({
+			success: true,
+			data: bootCamp,
+		});
+	} catch (error) {
+		next(error);
+	}
 };
 
 // @desc    Delete bootcamps
 // @route   DELETE /api/v1/bootcamps/:id
 // @Access  Private
-exports.deleteBootCamp = (req, res, next) => {
-	res
-		.status(200)
-		.json({ success: "true", msg: `Delete BootCamp ${req.params.id}` });
+exports.deleteBootCamp = async (req, res, next) => {
+	try {
+		const bootCamp = await Bootcamp.findByIdAndDelete(req.params.id);
+
+		if (!bootCamp) {
+			return next(
+				new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+			);
+		}
+		res.status(200).json({
+			success: true,
+			data: {},
+		});
+	} catch (error) {
+		next(error);
+	}
 };
