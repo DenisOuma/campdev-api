@@ -24,13 +24,14 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/v1/bootcamps", bootcamps);
 
 // set Port application
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // run server
 const server = app.listen(
 	PORT,
 	console.log(
-		`Server running in ${process.env.NODE_ENV} mode on Port ${PORT}`.yellow.bold
+		`Server running in ${process.env.NODE_ENV} mode on Port ${PORT}`.magenta
+			.bold
 	)
 );
 
