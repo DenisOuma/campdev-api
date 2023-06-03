@@ -15,13 +15,12 @@ const bootcamps = require("./routes/bootcamps");
 
 const app = express();
 
-// Body parser after model
-app.use(express.json());
-
 // Dev logging middleware
 if (process.env.NODE_ENV === "development") {
 	app.use(morgan("dev"));
 }
+// Body parser after model
+app.use(express.json());
 
 // Moute routers
 app.use("/api/v1/bootcamps", bootcamps);
