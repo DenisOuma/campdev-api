@@ -1,6 +1,5 @@
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
-const geocoder = require("../utils/geocoder");
 const Bootcamp = require("../models/Bootcamp");
 const geocoder = require("../utils/geocoder");
 
@@ -8,16 +7,43 @@ const geocoder = require("../utils/geocoder");
 // @route   GET /api/v1/bootcamps
 // @Access  Public
 exports.getBootCamps = asyncHandler(async (req, res, next) => {
-	console.log(req.query);
 	let query;
-	let queryStr = JSON.stringify(req.query);
+
+	// Copy req.query
+	const reqQuery = { ...req.query };
+
+	// Fields to exclude
+	const removeFields = ["select", "sort"];
+
+	removeFields.forEach((param) => delete reqQuery[param]);
+
+	// Create a query String
+	let queryStr = JSON.stringify(reqQuery);
+
+	// Create Operators ($gt, $gte, etc)
 	queryStr = queryStr.replace(
 		/\b(gt|gte|lt|lte|in)\b/g,
 		(match) => `$${match}`
 	);
 
+	// Finding a resource
 	query = Bootcamp.find(JSON.parse(queryStr));
-	console.log("String ===>", queryStr);
+
+	// Select Fields
+	if (req.query.select) {
+		const fields = req.query.select.split(",").join(" ");
+		query = query.select(fields);
+	}
+
+	// Sort by
+	if (req.query.sort) {
+		const sortBy = req.query.sort.split(",").join(" ");
+		query = query.sort(sortBy);
+	} else {
+		query = query.sort("-createdAt");
+	}
+
+	// Executing our query
 	const bootCamps = await query;
 
 	res.status(200).json({
@@ -90,13 +116,6 @@ exports.deleteBootCamp = asyncHandler(async (req, res, next) => {
 		success: true,
 		data: {},
 	});
-});
-
-// @desc    Get bootcamps within a raduius
-// @route   Get /api/v1/bootcamps/radius/:zipcode/:distance
-// @Access  Private
-exports.getBootCampsInRadius = asyncHandler(async (req, res, next) => {
-	const { zipcode, distance } = req.params;
 });
 
 // @desc    get bootcamps within a radius
